@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: 'weather'
+    type: 'open-weather-datasource'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      path: 'forecast'
+      url: 'https://api.openweathermap.org/data/2.5'
+    secureJsonData:
+      apiKey: 'api-key'

@@ -1,3 +1,12 @@
 {
-  "extends": "./.config/tsconfig.json"
+  "extends": "./.config/tsconfig.json",
+  "type": "setting",
+  "settings": {
+    "compilerOptions": {
+      "jsx": "react",
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true
+    }
+  }
+
 }

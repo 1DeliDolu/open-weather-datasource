@@ -7,8 +7,7 @@ import {
   createDataFrame,
   FieldType,
 } from '@grafana/data';
-import { getBackendSrv } from '@grafana/runtime';
-import { lastValueFrom } from 'rxjs';
+import axios from 'axios';
 import _ from 'lodash';
 
 import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, WeatherData, WeatherParams } from './types';
@@ -21,7 +20,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
-    this.baseUrl = instanceSettings.url!;
+    this.baseUrl = `https://api.openweathermap.org/data/2.5/forecast?appid=${instanceSettings.jsonData.apiKey}`;
   }
 
   getDefaultQuery(): Partial<MyQuery> {
@@ -145,14 +144,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     const url = `${this.baseUrl}&${urlParams}`;
 
     try {
-      const response = await lastValueFrom(getBackendSrv().fetch({
+      const response = await axios({
         url,
         method: 'POST',
-      }));
-
-      if (response.status !== 200) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      });
 
       return this.handleResponse(response);
     } catch (error) {
@@ -163,13 +158,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   private handleResponse(response: { status: number; statusText: string; data: unknown }) {
     return {
       status: response.status,
-      statusText: response.statusText || 'Success',
+      statusText: response.statusText,
       data: response.data,
     };
   }
 
   private handleError(error: unknown) {
-    if (error instanceof Error) {
+    if (axios.isAxiosError(error)) {
       return {
         status: 'error',
         statusText: error.message,

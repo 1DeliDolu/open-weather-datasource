@@ -1,3 +1,6 @@
 cd /mnt/d/APP/Prtg/open-weather-datasource
 
 75a856b817655e7d502df5b41ed8c92e
+
+
+export GRAFANA_ACCESS_POLICY_TOKEN=glc_eyJvIjoiMTMzODk5NiIsIm4iOiJwZGMtZGQxZGVsaWRvbHUtZGVmYXVsdC1wbHVnaW4tc2lnbmluZy10b2tlbi1vcGVuIiwiayI6IjQxejZObjBLQU8zN002YkJnNTc5UEpiRSIsIm0iOnsiciI6InByb2QtZXUtd2VzdC0yIn19

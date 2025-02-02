@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+    "type": "datasource",
+    "name": "Weather",
+    "id": "open-weather-datasource",
+    "metrics": true,
+    "info": {
+        "description": "",
+        "author": {
+            "name": "Open"
+        },
+        "keywords": [
+            "datasource"
+        ],
+        "logos": {
+            "small": "img/logo.svg",
+            "large": "img/logo.svg"
+        },
+        "links": [],
+        "screenshots": [],
+        "version": "1.0.0",
+        "updated": "2025-02-02"
+    },
+    "routes": [
+        {
+            "path": "forecast",
+            "url": "{{.JsonData.url}}/forecast?appid={{.SecureJsonData.apiKey}}"
+        }
+    ],
+    "dependencies": {
+        "grafanaDependency": ">=10.4.0",
+        "plugins": []
+    },
+    "includes": [
+        {
+            "name": "overview",
+            "path": "dashboards/overview.json",
+            "type": "dashboard"
+        }
+    ],
+    "buildMode": "production"
+}

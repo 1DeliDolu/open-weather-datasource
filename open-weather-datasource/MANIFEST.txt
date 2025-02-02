@@ -1,0 +1,38 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "private",
+  "signedByOrg": "dd1delidolu",
+  "signedByOrgName": "prtg",
+  "rootUrls": [
+    "https://delidolu.grafana.net/"
+  ],
+  "plugin": "open-weather-datasource",
+  "version": "1.0.0",
+  "time": 1738523525378,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "CHANGELOG.md": "aaa78be4710ef41d56ddab1edbd180ef9f9adfea2f293109aae925dc33a1b9b3",
+    "dashboards/overview.json": "ea3f6dbf61acffe0f8baea01c8c6b81da3b2ca9ce6d1ae117443d0ffe5f2063b",
+    "img/logo.svg": "a427e50a1ea5462f17bf3bad53bf1369087fb08ab23347f034d1d5935d35a7ce",
+    "LICENSE": "39609f547226cb73888489cda59a48f399e02507344dcf4a9df7af9d627b1eab",
+    "module.js": "dd876dd83b3ea3774a402fbe65790ebe2db7434d28cb972fe6c6dabc59d51d5a",
+    "module.js.map": "1a3c3d5b33781219dd15040cf9ed6a85712dbe192ea4733c857a4c558527cf0c",
+    "plugin.json": "06d2813d77dcc45973db8e3f178efaeb646ce41d90f43343e6e5f8df2ebd0ae0",
+    "README.md": "d56709eb118925752d6dafa9d4be6ecc8d2ac1d3813345049f7d41c63968964f"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.11
+Comment: https://openpgpjs.org
+
+wrkEARMKAAYFAmefw4UAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm5xjwAgkB6o9VFuSlX32i8D8jaZnYOdVPDIzmmcEIqcfDZvvQyopoKRDK
+R2VWUOB7uFuKA/p/hxAbWwMih2Rd9BK39WxFzQUCCQFAAokVH0/IqTANAw97
+c3y+Kep/+oEeT/jDNljo4woNETvfTywMYMwpSoSksrGEJ7oGtQZdKX0rqtj7
+u0ea+2n22w==
+=KyXo
+-----END PGP SIGNATURE-----

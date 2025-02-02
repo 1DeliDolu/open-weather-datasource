@@ -1,4 +1,0 @@
-cd /mnt/d/APP/Prtg/open-weather-datasource
-
-
-

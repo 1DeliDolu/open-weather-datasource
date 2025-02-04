@@ -1,94 +1,60 @@
 import {
-  DataFrame,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceApi,
   DataSourceInstanceSettings,
   createDataFrame,
   FieldType,
+  DataFrame
 } from '@grafana/data';
-import axios from 'axios';
-import _ from 'lodash';
+import { getBackendSrv, FetchError } from '@grafana/runtime';
+import { lastValueFrom } from 'rxjs';
 
-import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, WeatherData, WeatherParams } from './types';
-
-
+import { MyQuery, MyDataSourceOptions, WeatherData } from './types';
 
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   baseUrl: string;
- 
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
-    this.baseUrl = `https://api.openweathermap.org/data/2.5/forecast?appid=${instanceSettings.jsonData.apiKey}`;
-  }
 
-  getDefaultQuery(): Partial<MyQuery> {
-    return DEFAULT_QUERY;
+    // ✅ Ensure API key and base URL are set correctly
+    this.baseUrl = instanceSettings.jsonData.url || "";
+   
   }
-
-  filterQuery(query: MyQuery): boolean {
-    return !!query.location;
-  }
+    
 
   async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
     const promises = options.targets.map(async (target) => {
-      const location = (target.cityName || target.location || DEFAULT_QUERY.location || '')
-        .split(',')
-        .map(part => part.trim().charAt(0).toUpperCase() + part.trim().slice(1).toLowerCase())
-        .join(',');
+      const location = encodeURIComponent(target.cityName || "Berlin,DE");
 
       if (!location) {
+        console.warn("No location specified in query.");
         return null;
       }
 
       try {
         const response = await this.request(`q=${location}`);
-        const weatherData = response.data as { list: WeatherData[] };
-
-        if (!weatherData || !weatherData.list) {
+        if (!response.data || !response.data.list) {
+          console.warn(`No weather data found for ${location}`);
           return null;
         }
 
-        const selectedParameters = Array.isArray(target.subParameter)
-          ? target.subParameter
-          : [target.subParameter || 'temp'];
-
+        const weatherData = response.data.list;
         const times: number[] = [];
-        const valuesByParameter: { [key: string]: number[] } = {};
+        const values: number[] = [];
 
-        selectedParameters.forEach(param => {
-          valuesByParameter[param] = [];
-        });
-
-        weatherData.list.forEach((data: WeatherData) => {
-          const timestamp = data.dt * 1000;
-          times.push(timestamp);
-
-          selectedParameters.forEach(param => {
-            let value: number | undefined;
-
-            if (target.mainParameter) {
-              const mainData = data[target.mainParameter as keyof WeatherData] as Record<string, number>;
-              if (mainData && typeof mainData === 'object') {
-                value = mainData[param];
-              }
-            }
-            valuesByParameter[param].push(value ?? NaN);
-          });
+        weatherData.forEach((data: WeatherData) => {
+          times.push(data.dt * 1000);
+          values.push(data.main.temp);
         });
 
         return createDataFrame({
           refId: target.refId,
-          name: `${location} - Weather Data`,
+          name: `${location} - Weather`,
           fields: [
             { name: 'Time', values: times, type: FieldType.time },
-            ...selectedParameters.map(param => ({
-              name: param,
-              values: valuesByParameter[param],
-              type: FieldType.number,
-              config: { unit: this.getMetricUnit(param) }
-            }))
+            { name: 'Temperature', values: values, type: FieldType.number, config: { unit: '°C' } }
           ],
         });
       } catch (error) {
@@ -101,101 +67,39 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     return { data: results.filter((result): result is DataFrame => result !== null) };
   }
 
-  async getCurrentWeather(query: MyQuery) {
-    try {
-      const response = await this.request(`q=${query.location}`);
-      return response.data;
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(`Failed to fetch current weather: ${err.message}`);
-      } else {
-        throw new Error('Failed to fetch current weather: Unknown error');
-      }
-    }
-  }
-
-  private getMetricUnit(metric: string): string {
-    const unitMap: Record<string, string> = {
-      temp: '°C',
-      feels_like: '°C',
-      temp_min: '°C',
-      temp_max: '°C',
-      humidity: '%',
-      speed: 'm/s',
-      wind_speed: 'm/s',
-      pressure: 'hPa',
-      sea_level: 'hPa',
-      grnd_level: 'hPa',
-      clouds: '%',
-      all: '%',
-    };
-    return unitMap[metric.toLowerCase()] || '';
-  }
-
-
   async request(params?: string) {
-    const defaultParams: WeatherParams = {
-      units: 'metric'
-    };
-
-    const paramPair = params ? [params.split('=')] : [];
-    const queryParams = _.merge({}, defaultParams, _.fromPairs(paramPair));
-    const urlParams = new URLSearchParams(queryParams).toString();
-    const url = `${this.baseUrl}&${urlParams}`;
-
     try {
-      const response = await axios({
-        url,
-        method: 'POST',
-      });
+      const url = `${this.baseUrl}/forecast?${params}&units=metric`;
+      const response = await lastValueFrom(
+        getBackendSrv().fetch<{ list: WeatherData[] }>({
+          url,
+          method: 'GET'
+        })
 
-      return this.handleResponse(response);
+      );
+
+      return response;
     } catch (error) {
-      throw this.handleError(error);
+      console.error('Request error:', error);
+      const fetchError = error as FetchError;
+      throw this.handleError(fetchError);
     }
   }
 
-  private handleResponse(response: { status: number; statusText: string; data: unknown }) {
+  private handleError(error: FetchError) {
     return {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data,
-    };
-  }
-
-  private handleError(error: unknown) {
-    if (axios.isAxiosError(error)) {
-      return {
-        status: 'error',
-        statusText: error.message,
-        data: null
-      };
-    }
-    return {
-      status: 'error',
-      statusText: 'Unknown error',
-      data: null
+      status: error.status,
+      statusText: error.statusText || 'Network Error',
+      data: error.data
     };
   }
 
   async testDatasource() {
-    const defaultErrorMessage = 'Cannot connect to API';
-
     try {
-      const response = await this.request('q=London,uk');
-      return {
-        status: 'success',
-        message: response.statusText || 'Success',
-      };
+      const response = await this.request('q=Berlin,DE');
+      return { status: 'success', message: response.statusText || 'Success' };
     } catch (err) {
-      const errorMessage = err instanceof Error
-        ? `Error: ${err.message}`
-        : defaultErrorMessage;
-
-      return {
-        status: 'error',
-        message: errorMessage,
-      };
+      return { status: 'error', message: 'Failed to connect to API' };
     }
   }
 }

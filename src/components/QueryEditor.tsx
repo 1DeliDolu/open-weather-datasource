@@ -46,14 +46,14 @@ const subParameterOptions: { [key: string]: Array<SelectableValue<string>> } = {
 export function QueryEditor({ query, onChange, onRunQuery }: Props) {
   const onCityNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const cityName = e.target.value;
-
-    onChange({
-      ...query,
+    
+    onChange({ 
+      ...query, 
       cityName: cityName,
-      location: cityName,
-      queryText: cityName
+      location: cityName,  
+      queryText: cityName  
     });
-
+    
     setTimeout(() => {
       onRunQuery();
     }, 500);
@@ -61,8 +61,8 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
 
   const onMainParameterChange = (value: SelectableValue<string>) => {
     const newSubParameter = value.value ? subParameterOptions[value.value][0].value : DEFAULT_QUERY.subParameter;
-    onChange({
-      ...query,
+    onChange({ 
+      ...query, 
       mainParameter: value.value,
       subParameter: newSubParameter,
       metric: newSubParameter 
@@ -71,12 +71,12 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
   };
 
   const onSubParameterChange = (value: Array<SelectableValue<string>> | SelectableValue<string>) => {
-    const selectedValues = Array.isArray(value)
+    const selectedValues = Array.isArray(value) 
       ? value.map(v => v.value).filter((v): v is string => v !== undefined)
       : [value.value].filter((v): v is string => v !== undefined);
 
-    onChange({
-      ...query,
+    onChange({ 
+      ...query, 
       subParameter: selectedValues,
       metric: selectedValues 
     });
@@ -117,18 +117,18 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
         <InlineField label="Parameters" labelWidth={20} tooltip="Select weather parameters">
           <Select
             options={subParameterOptions[query.mainParameter || 'main']}
-            value={Array.isArray(query.subParameter)
+            value={Array.isArray(query.subParameter) 
               ? query.subParameter.map(param => ({
-                label: subParameterOptions[query.mainParameter || 'main']
-                  .find(opt => opt.value === param)?.label || param,
-                value: param
-              }))
-              : query.subParameter
-                ? [{
                   label: subParameterOptions[query.mainParameter || 'main']
-                    .find(opt => opt.value === query.subParameter)?.label || query.subParameter,
-                  value: query.subParameter
-                }]
+                    .find(opt => opt.value === param)?.label || param,
+                  value: param
+                }))
+              : query.subParameter 
+                ? [{
+                    label: subParameterOptions[query.mainParameter || 'main']
+                      .find(opt => opt.value === query.subParameter)?.label || query.subParameter,
+                    value: query.subParameter
+                  }]
                 : []}
             onChange={onSubParameterChange}
             isMulti={true}

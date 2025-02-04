@@ -1,46 +1,59 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
-  "name": "Weather",
+  "name": "Weather Data Source",
   "id": "open-weather-datasource",
   "metrics": true,
+  "annotations": true,
   "info": {
-    "description": "",
+    "description": "A frontend-only Grafana data source plugin for fetching weather data.",
     "author": {
-      "name": "Open"
+      "name": "Mustafa Özdemir",
+      "url": "https://github.com/1DeliDolu/open-weather-datasource"
     },
-    "keywords": ["datasource"],
+    "keywords": ["datasource", "weather", "openweathermap", "frontend-only"],
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
     "links": [
       {
-        "name": "GitHub",
-        "url": "https://github.com/1DeliDolu/open-weather-datasource.git"
+        "name": "GitHub Repository",
+        "url": "https://github.com/1DeliDolu/open-weather-datasource"
+      },
+      {
+        "name": "OpenWeather API",
+        "url": "https://openweathermap.org/api"
       }
     ],
     "screenshots": [],
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "1.0.0",
+    "updated": "2025-01-31"
+  },
+  "queryOptions": {
+    "maxDataPoints": true,
+    "minInterval": true
   },
   "routes": [
-    {
-      "path": "forecast",
-      "url": "{{.JsonData.url}}/forecast?appid={{.SecureJsonData.apiKey}}"
-    }
-  ],
+  {
+    "path": "forecast",
+    "url": "{{ .JsonData.url }}",
+    "headers": [
+      {
+        "name": "Access-Control-Allow-Origin",
+        "content": "*"
+      }
+    ],
+        "urlParams": [
+      {
+        "name": "appid",
+        "content": "{{ .SecureJsonData.apiKey }}"
+      }
+    ]
+  }
+],
   "dependencies": {
     "grafanaDependency": ">=10.4.0",
     "plugins": []
-  },
-  
-    "includes": [
-      {
-        "name": "overview",
-        "path": "dashboards/overview.json",
-        "type": "dashboard"
-      }
-    ]
-  
+  }
 }

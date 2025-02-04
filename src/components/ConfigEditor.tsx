@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { InlineField, Input} from '@grafana/ui';
+import { InlineField, Input, Button } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { MyDataSourceOptions, MySecureJsonData } from '../types';
 
@@ -7,40 +7,70 @@ interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions, 
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
-  const { jsonData} = options;
+  const { secureJsonData, secureJsonFields, jsonData } = options;
 
- 
   const onAPIKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const apiKey = event.target.value;
-  
     onOptionsChange({
       ...options,
-      jsonData: {
-        ...jsonData, // Preserve other secure data
-        apiKey,
+      secureJsonData: {
+        apiKey: event.target.value,
+      },
+    });
+  };
+  console.log('API Key:', secureJsonData?.apiKey);
+
+  const onResetAPIKey = () => {
+    onOptionsChange({
+      ...options,
+      secureJsonFields: {
+        ...options.secureJsonFields,
+        apiKey: false,
+      },
+      secureJsonData: {
+        ...options.secureJsonData,
+        apiKey: '',
       },
     });
   };
 
- 
+  const onUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onOptionsChange({
+      ...options,
+      jsonData: {
+        ...jsonData,
+        url: event.target.value,
+      },
+    });
+  };
+
   return (
-    <div className="gf-form-group">
-        <InlineField
-        label="API Key"
-        labelWidth={14}
-        interactive
-        required
-        tooltip="Your API key (stored securely)"
-      >
+    <>
+      <InlineField label="API Key" labelWidth={14}>
+        <div style={{ display: 'flex' }}>
+          <Input
+            type="password"
+            placeholder={secureJsonFields?.apiKey ? 'Configured' : 'Enter API Key'}
+            value={secureJsonData?.apiKey || ''}
+            onChange={onAPIKeyChange}
+            width={70}
+          />
+          {secureJsonFields?.apiKey && (
+            <Button variant="secondary" type="button" onClick={onResetAPIKey}>
+              Reset
+            </Button>
+          )}
+        </div>
+      </InlineField>
+
+      <InlineField label="API URL" labelWidth={14}>
         <Input
-          id="config-editor-api-key"
-          type='password'
-          value={jsonData?.apiKey || ''}
-          placeholder="Enter your API key"
-          width={40}
-          onChange={onAPIKeyChange}
+          type="text"
+          placeholder="Enter API Base URL"
+          value={jsonData?.url || ''}
+          onChange={onUrlChange}
+          width={70}
         />
       </InlineField>
-    </div>
+    </>
   );
 }

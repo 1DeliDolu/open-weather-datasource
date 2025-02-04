@@ -2,22 +2,20 @@ import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
 export interface MyQuery extends DataQuery {
+  queryText?: string;
+  metric?: string | string[]; 
   location?: string;
-  cityName?: string;
-  metric?: string | string[];
-  mainParameter?: string;
-  subParameter?: string | string[];
-  units?: WeatherUnits;
+  constant?: number;
+  units?: 'standard' | 'metric' | 'imperial';
   main?: string;
   weather?: string;
   wind?: string;
-  queryText?: string;
-  constant?: number;
+  mainParameter?: string;
+  subParameter?: string | string[]; 
+  cityName?: string;
   values?: number[];
   times?: number[];
 }
-
-export type WeatherUnits = 'standard' | 'metric' | 'imperial';
 
 export const DEFAULT_QUERY: Partial<MyQuery> = {
   location: 'London,uk',
@@ -39,59 +37,45 @@ export interface DataSourceResponse {
 
 export interface WeatherData {
   dt: number;
-  main: MainWeatherData;
-  wind: WindData;
+  main: {
+    temp: number;
+    feels_like: number;
+    pressure: number;
+    humidity: number;
+    temp_min: number;
+    temp_max: number;
+    sea_level?: number;
+    grnd_level?: number;
+  };
+  wind: {
+    speed: number;
+    deg: number;
+    gust?: number;
+  };
   clouds: {
     all: number;
   };
   visibility: number;
-  weather: WeatherCondition[];
+  weather: Array<{
+    id: number;
+    main: string;
+    description: string;
+    icon: string;
+  }>;
 }
 
-export interface MainWeatherData {
-  temp: number;
-  feels_like: number;
-  pressure: number;
-  humidity: number;
-  temp_min: number;
-  temp_max: number;
-  sea_level?: number;
-  grnd_level?: number;
-}
-
-export interface WindData {
-  speed: number;
-  deg: number;
-  gust?: number;
-}
-
-export interface WeatherCondition {
-  id: number;
-  main: string;
-  description: string;
-  icon: string;
-}
-
-export interface WeatherParams {
-  units: string;
-}
-
+/**
+ * These are options configured for each DataSource instance
+ */
 export interface MyDataSourceOptions extends DataSourceJsonData {
-  path?: string;
-  apiKey?: string;
-  units?: WeatherUnits;
   url?: string;
-  content?: string;
-  urlParams?: UrlParam[];
-  proxyUrl?: string;
-  proxyUser?: string;
+  units?: 'standard' | 'metric' | 'imperial';
+  urlParams?: string[];
 }
 
-export interface UrlParam {
-  name: string;
-  content: string;
-}
-
+/**
+ * Value that is used in the backend, but never sent over HTTP to the frontend
+ */
 export interface MySecureJsonData {
   apiKey?: string;
 }
